@@ -3,7 +3,7 @@
  * Plugin Name:       SLS csv order attachment to completed order email notification
  * Plugin URI:        https://github.com/ysaintlary/sls-csv-order-attachment
  * Description:       Attache un bon de commande CSV à l'e-mail « Commande terminée » de WooCommerce.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires at least: 6.5
  * Requires PHP:      7.4
  * Author:            Yves Saint-Lary
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SLS_COA_VERSION', '1.0.0' );
+define( 'SLS_COA_VERSION', '1.1.0' );
 define( 'SLS_COA_EAN_META_KEY', '_alg_ean' );
 
 /**
@@ -71,10 +71,7 @@ function SLS_COA_build_csv_line( $fields ) { // phpcs:ignore WordPress.NamingCon
 		}
 		$escaped[] = $field;
 	}
-	$line = implode( ';', $escaped ) . "\r\n";
-
-	// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- graceful fallback for unmappable characters
-	return @mb_convert_encoding( $line, 'Windows-1252', 'UTF-8' );
+	return implode( ';', $escaped ) . "\r\n";
 }
 
 /**
@@ -181,13 +178,17 @@ function SLS_COA_attach_csv( $attachments, $email_id, $order, $email ) { // phpc
 	}
 
 	$order_number = $order->get_order_number();
-	$file_path    = $dir . '/bon-de-commande-' . $order_number . '.csv';
+	$file_path    = $dir . '/toblerone-slsagency-commande-' . $order_number . '.csv';
 
 	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- writing a temporary CSV file to the uploads directory
 	$handle = fopen( $file_path, 'wb' );
 	if ( ! $handle ) {
 		return $attachments;
 	}
+
+	// UTF-8 BOM so Excel interprets the file correctly.
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
+	fwrite( $handle, "\xEF\xBB\xBF" );
 
 	// Header line — two spaces between "Prix" and "d'achat" to match the reference file.
 	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite

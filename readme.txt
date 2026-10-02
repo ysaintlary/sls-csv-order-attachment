@@ -4,7 +4,7 @@ Tags: woocommerce, csv, email, order, attachment
 Requires at least: 6.5
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -23,6 +23,10 @@ Le fichier CSV est compatible avec Excel (encodage Windows-1252, séparateur poi
 3. Aucune configuration nécessaire : le CSV est automatiquement joint aux e-mails de commande terminée
 
 == Changelog ==
+
+= 1.1.0 =
+* Encodage UTF-8 avec BOM (accents corrects dans Excel)
+* Nom du fichier : toblerone-slsagency-commande-XXXX.csv
 
 = 1.0.0 =
 * Version initiale
