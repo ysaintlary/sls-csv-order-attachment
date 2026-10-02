@@ -3,7 +3,7 @@
  * Plugin Name:       YS | CSV Order Attachment
  * Plugin URI:        https://github.com/ysaintlary/sls-csv-order-attachment
  * Description:       Attache un bon de commande CSV à l'e-mail « Commande terminée » de WooCommerce.
- * Version:           1.3.0
+ * Version:           1.3.1
  * Requires at least: 6.5
  * Requires PHP:      7.4
  * Author:            Yves Saint-Lary
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once __DIR__ . '/lib/wp-plugin-base/wp-plugin-base-runtime-updater.php';
 require_once __DIR__ . '/lib/xlsxwriter/xlsxwriter.class.php';
 
-define( 'SLS_COA_VERSION', '1.3.0' );
+define( 'SLS_COA_VERSION', '1.3.1' );
 define( 'SLS_COA_EAN_META_KEY', '_alg_ean' );
 
 /**
@@ -130,7 +130,7 @@ function SLS_COA_attach_xlsx( $attachments, $email_id, $order, $email ) { // php
 	}
 
 	$order_number = $order->get_order_number();
-	$file_path    = $dir . '/toblerone-slsagency-commande-' . $order_number . '.xlsx';
+	$file_path    = $dir . '/SLS-toblerone-BL-' . $order_number . '.xlsx';
 
 	$writer = new \XLSXWriter(); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- third-party class name
 	$header = array(
