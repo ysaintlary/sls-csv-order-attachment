@@ -3,7 +3,7 @@
  * Plugin Name:       SLS csv order attachment to completed order email notification
  * Plugin URI:        https://github.com/ysaintlary/sls-csv-order-attachment
  * Description:       Attache un bon de commande CSV à l'e-mail « Commande terminée » de WooCommerce.
- * Version:           1.1.0
+ * Version:           1.2.0
  * Requires at least: 6.5
  * Requires PHP:      7.4
  * Author:            Yves Saint-Lary
@@ -21,7 +21,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SLS_COA_VERSION', '1.1.0' );
+require_once __DIR__ . '/lib/wp-plugin-base/wp-plugin-base-runtime-updater.php';
+
+define( 'SLS_COA_VERSION', '1.2.0' );
 define( 'SLS_COA_EAN_META_KEY', '_alg_ean' );
 
 /**
