@@ -40,7 +40,7 @@ if ( ! class_exists( '\\YahnisElsts\\PluginUpdateChecker\\v5\\PucFactory' ) ) {
 }
 
 $wp_plugin_base_runtime_updater_main_file  = dirname( dirname( __DIR__ ) ) . '/sls-csv-order-attachment.php';
-$wp_plugin_base_runtime_updater_source_url = 'https://github.com/ysaintlary/sls-csv-order-attachment';
+$wp_plugin_base_runtime_updater_source_url = 'https://github.com/ysaintlary/csv-order-attachment';
 $wp_plugin_base_runtime_updater_provider   = 'github-release';
 $wp_plugin_base_runtime_updater_slug       = 'sls-csv-order-attachment';
 

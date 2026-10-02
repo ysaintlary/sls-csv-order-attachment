@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name:       YS | CSV Order Attachment
- * Plugin URI:        https://github.com/ysaintlary/sls-csv-order-attachment
+ * Plugin URI:        https://github.com/ysaintlary/csv-order-attachment
  * Description:       Attache un bon de commande CSV à l'e-mail « Commande terminée » de WooCommerce.
- * Version:           1.3.1
+ * Version: 1.4.0
  * Requires at least: 6.5
  * Requires PHP:      7.4
  * Author:            Yves Saint-Lary

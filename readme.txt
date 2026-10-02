@@ -4,7 +4,7 @@ Tags: woocommerce, xlsx, email, order, attachment
 Requires at least: 6.5
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.3.1
+Stable tag: 1.4.0
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -21,6 +21,12 @@ Ce plugin génère automatiquement un fichier Excel (.xlsx) contenant le détail
 3. Aucune configuration nécessaire : le fichier Excel est automatiquement joint aux e-mails de commande terminée
 
 == Changelog ==
+
+= 1.4.0 =
+* Update - Renommage du repo GitHub (sls-csv-order-attachment → csv-order-attachment).
+* Update - Préfixe « YS | » dans le nom du plugin.
+* Update - URL du Runtime Updater mise à jour.
+
 
 = 1.3.1 =
 * Nom du fichier : SLS-toblerone-BL-XXXX.xlsx
