@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name:       SLS csv order attachment to completed order email notification
+ * Plugin Name:       YS | CSV Order Attachment
  * Plugin URI:        https://github.com/ysaintlary/sls-csv-order-attachment
  * Description:       Attache un bon de commande CSV à l'e-mail « Commande terminée » de WooCommerce.
- * Version:           1.2.0
+ * Version:           1.3.0
  * Requires at least: 6.5
  * Requires PHP:      7.4
  * Author:            Yves Saint-Lary
@@ -22,8 +22,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 require_once __DIR__ . '/lib/wp-plugin-base/wp-plugin-base-runtime-updater.php';
+require_once __DIR__ . '/lib/xlsxwriter/xlsxwriter.class.php';
 
-define( 'SLS_COA_VERSION', '1.2.0' );
+define( 'SLS_COA_VERSION', '1.3.0' );
 define( 'SLS_COA_EAN_META_KEY', '_alg_ean' );
 
 /**
@@ -37,44 +38,6 @@ add_action(
 		}
 	}
 );
-
-/**
- * Sanitize a text value for CSV injection prevention.
- *
- * @param string $value Cell value.
- * @return string Sanitized value.
- */
-function SLS_COA_sanitize_csv_cell( $value ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.FunctionNameInvalid -- prefixed constant-style per project convention
-	$value = (string) $value;
-	if ( '' === $value ) {
-		return $value;
-	}
-	$first = $value[0];
-	if ( in_array( $first, array( '=', '+', '-', '@', "\t", "\r" ), true ) ) {
-		return "'" . $value;
-	}
-	return $value;
-}
-
-/**
- * Build a CSV line with semicolon separator and CRLF ending.
- *
- * Values are only quoted when they contain a semicolon, double-quote or newline.
- *
- * @param array $fields List of field values.
- * @return string CSV line in Windows-1252 encoding.
- */
-function SLS_COA_build_csv_line( $fields ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.FunctionNameInvalid -- prefixed constant-style per project convention
-	$escaped = array();
-	foreach ( $fields as $field ) {
-		$field = (string) $field;
-		if ( preg_match( '/[;"\r\n]/', $field ) ) {
-			$field = '"' . str_replace( '"', '""', $field ) . '"';
-		}
-		$escaped[] = $field;
-	}
-	return implode( ';', $escaped ) . "\r\n";
-}
 
 /**
  * Resolve the EAN / GTIN code for a product.
@@ -114,19 +77,6 @@ function SLS_COA_get_ean( $product ) { // phpcs:ignore WordPress.NamingConventio
 	return '';
 }
 
-/**
- * Format a price for the CSV: comma decimal, 2 decimals, "0" when zero.
- *
- * @param float $price Price value.
- * @return string Formatted price.
- */
-function SLS_COA_format_price( $price ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.FunctionNameInvalid -- prefixed constant-style per project convention
-	$price = (float) $price;
-	if ( 0.0 === $price ) {
-		return '0';
-	}
-	return number_format( $price, 2, ',', '' );
-}
 
 /**
  * Ensure the upload directory exists with security files.
@@ -157,7 +107,7 @@ function SLS_COA_get_upload_dir() { // phpcs:ignore WordPress.NamingConventions.
 }
 
 /**
- * Attach a CSV purchase order to the completed order email.
+ * Attach an XLSX purchase order to the completed order email.
  *
  * @param array    $attachments Existing attachments.
  * @param string   $email_id    Email identifier.
@@ -165,7 +115,7 @@ function SLS_COA_get_upload_dir() { // phpcs:ignore WordPress.NamingConventions.
  * @param WC_Email $email       Email object.
  * @return array Modified attachments.
  */
-function SLS_COA_attach_csv( $attachments, $email_id, $order, $email ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.FunctionNameInvalid, Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- prefixed constant-style per project convention; $email required by filter signature
+function SLS_COA_attach_xlsx( $attachments, $email_id, $order, $email ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.FunctionNameInvalid, Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- prefixed constant-style per project convention; $email required by filter signature
 	if ( 'customer_completed_order' !== $email_id ) {
 		return $attachments;
 	}
@@ -180,21 +130,19 @@ function SLS_COA_attach_csv( $attachments, $email_id, $order, $email ) { // phpc
 	}
 
 	$order_number = $order->get_order_number();
-	$file_path    = $dir . '/toblerone-slsagency-commande-' . $order_number . '.csv';
+	$file_path    = $dir . '/toblerone-slsagency-commande-' . $order_number . '.xlsx';
 
-	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- writing a temporary CSV file to the uploads directory
-	$handle = fopen( $file_path, 'wb' );
-	if ( ! $handle ) {
-		return $attachments;
-	}
+	$writer = new \XLSXWriter(); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- third-party class name
+	$header = array(
+		'Commande'         => 'string',
+		'UGS'              => 'string',
+		'Gencod'           => 'string',
+		"Libellé article"  => 'string',
+		'Quantité'         => 'integer',
+		"Prix d'achat HT"  => '#,##0.00',
+	);
 
-	// UTF-8 BOM so Excel interprets the file correctly.
-	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
-	fwrite( $handle, "\xEF\xBB\xBF" );
-
-	// Header line — two spaces between "Prix" and "d'achat" to match the reference file.
-	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
-	fwrite( $handle, SLS_COA_build_csv_line( array( 'Commande', 'UGS', 'Gencod', "Libellé article", 'Quantité', "Prix  d'achat HT" ) ) );
+	$writer->writeSheetHeader( 'Bon de commande', $header, array( 'suppress_row' => false ) ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 
 	foreach ( $order->get_items() as $item ) {
 		if ( ! $item instanceof \WC_Order_Item_Product ) {
@@ -202,22 +150,19 @@ function SLS_COA_attach_csv( $attachments, $email_id, $order, $email ) { // phpc
 		}
 
 		$product = $item->get_product();
-		$sku     = $product ? SLS_COA_sanitize_csv_cell( $product->get_sku() ) : '';
+		$sku     = $product ? (string) $product->get_sku() : '';
 		$ean     = $product ? SLS_COA_get_ean( $product ) : '';
-		$name    = SLS_COA_sanitize_csv_cell( $item->get_name() );
+		$name    = $item->get_name();
 		$qty     = $item->get_quantity();
-		$price   = SLS_COA_format_price( $order->get_item_total( $item, false, false ) );
+		$price   = (float) $order->get_item_total( $item, false, false );
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
-		fwrite( $handle, SLS_COA_build_csv_line( array( $order_number, $sku, $ean, $name, $qty, $price ) ) );
+		$writer->writeSheetRow( 'Bon de commande', array( (string) $order_number, $sku, $ean, $name, $qty, $price ) ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 	}
 
-	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
-	fclose( $handle );
+	$writer->writeToFile( $file_path ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 
 	$attachments[] = $file_path;
 
-	// Schedule cleanup at end of request.
 	add_action(
 		'shutdown',
 		function () use ( $file_path ) {
@@ -230,4 +175,4 @@ function SLS_COA_attach_csv( $attachments, $email_id, $order, $email ) { // phpc
 
 	return $attachments;
 }
-add_filter( 'woocommerce_email_attachments', 'SLS_COA_attach_csv', 10, 4 );
+add_filter( 'woocommerce_email_attachments', 'SLS_COA_attach_xlsx', 10, 4 );

@@ -1,28 +1,30 @@
-=== SLS csv order attachment to completed order email notification ===
+=== YS | CSV Order Attachment ===
 Contributors: ysaintlary
-Tags: woocommerce, csv, email, order, attachment
+Tags: woocommerce, xlsx, email, order, attachment
 Requires at least: 6.5
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Attache un bon de commande CSV à l'e-mail « Commande terminée » de WooCommerce.
+Attache un bon de commande XLSX à l'e-mail « Commande terminée » de WooCommerce.
 
 == Description ==
 
-Ce plugin génère automatiquement un fichier CSV contenant le détail des articles commandés et le joint à l'e-mail « Commande terminée » envoyé au client.
-
-Le fichier CSV est compatible avec Excel (encodage Windows-1252, séparateur point-virgule, virgule décimale).
+Ce plugin génère automatiquement un fichier Excel (.xlsx) contenant le détail des articles commandés et le joint à l'e-mail « Commande terminée » envoyé au client.
 
 == Installation ==
 
 1. Téléverser le dossier `sls-csv-order-attachment` dans `/wp-content/plugins/`
 2. Activer le plugin via le menu « Extensions » de WordPress
-3. Aucune configuration nécessaire : le CSV est automatiquement joint aux e-mails de commande terminée
+3. Aucune configuration nécessaire : le fichier Excel est automatiquement joint aux e-mails de commande terminée
 
 == Changelog ==
+
+= 1.3.0 =
+* Fichier joint au format Excel (.xlsx) au lieu de CSV
+* Bibliothèque PHP_XLSXWriter intégrée
 
 = 1.2.0 =
 * Mises à jour automatiques depuis WordPress (Runtime Updater Pack)
